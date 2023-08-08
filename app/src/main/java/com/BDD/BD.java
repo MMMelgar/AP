@@ -12,9 +12,8 @@ public class BD  extends SQLiteOpenHelper{
     public static final String TeamID="_idT";
     public static final String ID="_id";
     public static final String Name="name";
-    public static final String Imagen="imagen";
+    public static final String Image="image";
     public static final String Assists="assists";
-    public static final String DATE= "date";
     private static final String DATABASE="Tablas";
 
     private static final String TABLE1="Team";
@@ -33,8 +32,8 @@ public class BD  extends SQLiteOpenHelper{
                 TeamID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 Name + " TEXT)");
         BaseDeDatos.execSQL("create table " + TABLE2 + " (" +
-                ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                Name + " TEXT," + Imagen + " TEXT," +
+                ID + " TEXT PRIMARY KEY AUTOINCREMENT, " +
+                Name + " TEXT," + Image + " TEXT," +
                 TeamID  + " TEXT, FOREIGN KEY (" + TeamID + ") REFERENCES " + TABLE1 + "("+TeamID+"))");
         BaseDeDatos.execSQL("create table " + TABLE3 + " (" +
                 ID + " TEXT PRIMARY KEY, " +
@@ -50,58 +49,59 @@ public class BD  extends SQLiteOpenHelper{
     }
 
     public void Add(String name){
-        ContentValues valores = new ContentValues();
-        valores.put(Name, name);
-        this.getWritableDatabase().insert(TABLE1, null, valores);
+        ContentValues values = new ContentValues();
+        values.put(Name, name);
+        this.getWritableDatabase().insert(TABLE1, null, values);
     }
 
-    public void Add(String name, String imagen, String Id){
-        ContentValues valores = new ContentValues();
-        valores.put(Name, name);
-        valores.put(Imagen, imagen);
-        valores.put(TeamID, Id);
-        this.getWritableDatabase().insert(TABLE2, null, valores);
+    public void Add(String Id, String name, String image, String IdT){
+        ContentValues values = new ContentValues();
+        values.put(ID, Id);
+        values.put(Name, name);
+        values.put(Image, image);
+        values.put(TeamID, IdT);
+        this.getWritableDatabase().insert(TABLE2, null, values);
     }
 
     public void Add(String TID, String SID, Date Date, Boolean Assist){
-        ContentValues valores = new ContentValues();
-        valores.put(ID, TID+SID+Date.toString());
-        valores.put(Assists, Assist);
-        this.getWritableDatabase().insert(TABLE3, null, valores);
+        ContentValues values = new ContentValues();
+        values.put(ID, TID+SID+Date.toString());
+        values.put(Assists, Assist);
+        this.getWritableDatabase().insert(TABLE3, null, values);
     }
 
-    public Cursor get(String TABLE, String condicion){
-        String[] args= new String[]{condicion};
+    public Cursor get(String TABLE, String condition){
+        String[] args= new String[]{condition};
         Cursor c= this.getReadableDatabase().query(TABLE, null, Name+"=?",args,null,null, null);
         return c;
     }
 
-    public void delete(String TABLE, String condicion){
-        String args[]= {condicion};
+    public void delete(String TABLE, String condition){
+        String args[]= {condition};
         this.getWritableDatabase().delete(TABLE,Name +"=?", args);
     }
 
-    public void update(String name, String condicion){
-        ContentValues valores = new ContentValues();
-        valores.put(Name, name);
-        String args[]= {condicion};
-        this.getWritableDatabase().update(TABLE1, valores,Name +"=?",args);
+    public void update(String name, String condition){
+        ContentValues values = new ContentValues();
+        values.put(Name, name);
+        String args[]= {condition};
+        this.getWritableDatabase().update(TABLE1, values,Name +"=?",args);
     }
 
-    public void update(String name, String imagen, String Id, String condicion){
-        ContentValues valores = new ContentValues();
-        valores.put(Name, name);
-        valores.put(Imagen, imagen);
-        valores.put(ID, Id);
-        String args[]= {condicion};
-        this.getWritableDatabase().update(TABLE2, valores,Name +"=?",args);
+    public void update(String name, String image, String Id, String condition){
+        ContentValues values = new ContentValues();
+        values.put(Name, name);
+        values.put(Image, image);
+        values.put(ID, Id);
+        String args[]= {condition};
+        this.getWritableDatabase().update(TABLE2, values,Name +"=?",args);
     }
 
     public void update(String TID, String SID, Date Date, Boolean Assist){
-        ContentValues valores = new ContentValues();
-        valores.put(Assists, Assist);
+        ContentValues values = new ContentValues();
+        values.put(Assists, Assist);
         String args[]= {TID+SID+Date.toString()};
-        this.getWritableDatabase().update(TABLE3, valores,ID +"=?",args);
+        this.getWritableDatabase().update(TABLE3, values,ID +"=?",args);
     }
 
     public Cursor Get(String TABLE){
