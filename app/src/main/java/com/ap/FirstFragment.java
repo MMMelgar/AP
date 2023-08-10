@@ -25,6 +25,7 @@ import com.BDD.BD;
 import com.BDD.Students;
 import com.BDD.StudentsAdapter;
 import com.ap.databinding.FragmentFirstBinding;
+import com.bumptech.glide.Glide;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +46,7 @@ public class FirstFragment extends Fragment {
     private int currentStudentIndex = 0;
     private List<Students> studentsList = new ArrayList<>();
     private int x=0;
+    BD databaseHelper;
 
     private ActivityResultLauncher<String> getContent = registerForActivityResult(
             new ActivityResultContracts.GetContent(),uri->{
@@ -69,6 +71,8 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Build(view);
+        databaseHelper = new BD(requireContext());
+        databaseHelper.deleteAll("Students");
         btnImportar.setOnClickListener(v -> {
             if(btnImportar.getText()=="Importar"){
                 getContent.launch("text/csv");
@@ -81,26 +85,42 @@ public class FirstFragment extends Fragment {
         });
         btnAceptar.setOnClickListener(v -> {
             if(btnAceptar.getText().equals("Aceptar")){
-                currentStudentIndex = 0; // Restablece el índice al primer estudiante
+                currentStudentIndex = 0;
                 x = 4;
                 SetVisibility();
                 showStudentData();
             }else{
                 if(btnAceptar.getText().equals("Siguiente")){
+                    String updateId = id.getText().toString().trim();
+                    String updatedName = name.getText().toString().trim();
+                    String image = String.valueOf(selectedImageUri);
+
+                    if (updateId.isEmpty() || updatedName.isEmpty()) {
+                        Toast.makeText(requireContext(), "Los campos no pueden estar vacíos", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (databaseHelper.isDataAlreadyExists(updateId, updatedName, image)) {
+                        Toast.makeText(requireContext(), "Los datos ya existen en la base de datos", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Students student = studentsList.get(currentStudentIndex);
+                    student.setID(updateId);
+                    student.setName(updatedName);
+                    student.setImage(image);
                     currentStudentIndex++;
-                    insertDataIntoDatabase();
-                    if (currentStudentIndex < studentsList.size()-1) {
+                    if (currentStudentIndex < studentsList.size()) {
                         if(currentStudentIndex==1){
                             x=2;
                             SetVisibility();
+                        }else if(currentStudentIndex==studentsList.size()-1){
+                            x = 3;
+                            SetVisibility();
                         }
                         showStudentData();
-                    } else {
-                        showStudentData();
-                        x = 3;
-                        SetVisibility();
                     }
                 }else{
+                    insertAllDataIntoDatabase();
                     NavHostFragment.findNavController(FirstFragment.this)
                             .navigate(R.id.action_FirstFragment_to_SecondFragment);
                 }
@@ -114,8 +134,11 @@ public class FirstFragment extends Fragment {
             }else if(btnCancelar.getText().equals("Anterior")){
                 currentStudentIndex--;
                 if (currentStudentIndex >= 0) {
+                    x=2;
+                    SetVisibility();
                     showStudentData();
                 }else{
+                    currentStudentIndex=0;
                     x=4;
                     SetVisibility();
                 }
@@ -296,7 +319,10 @@ public class FirstFragment extends Fragment {
 
     private void showSelectedImage(Uri imageUri){
         selectedImageUri = imageUri;
-        btni.setImageURI(imageUri);
+        Glide.with(requireContext())
+                .load(imageUri)
+                .override(200, 200)
+                .into(btni);
     }
 
     private void selectImage(){
@@ -305,13 +331,16 @@ public class FirstFragment extends Fragment {
         selectImageLauncher.launch(intent);
     }
 
-    private void insertDataIntoDatabase() {
-        String updateId = id.getText().toString();
-        String updatedName = name.getText().toString();
-        String image = String.valueOf(selectedImageUri);
-        String teamId = "00";
-        BD databaseHelper = new BD(requireContext());
-        databaseHelper.Add(updateId, updatedName,image,teamId);
+    private void insertAllDataIntoDatabase() {
+        for (Students student : studentsList) {
+            String updateId = student.getID();
+            String updatedName = student.getName();
+            String image = student.getImage();
+            String teamId = "00";
+
+            databaseHelper.insertStudent(updateId, updatedName, image, teamId);
+        }
+        Toast.makeText(requireContext(), "Datos Guardados Correctamente", Toast.LENGTH_SHORT).show();
         databaseHelper.close();
     }
 
@@ -319,6 +348,7 @@ public class FirstFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        Glide.with(requireContext()).clear(btni);
     }
 
 }

@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">AP</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="cancelar">Cancelar</string>
+    <string name="aceptar">Aceptar</string>
+    <string name="importar">Importar</string>
+    <string name="previous">Previous</string>
+</resources>
