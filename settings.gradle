@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "AP"
-include ':app'
+include ':app', ':opencv'
